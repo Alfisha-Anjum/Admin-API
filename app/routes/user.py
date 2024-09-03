@@ -1,11 +1,29 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException,Query
 from app.model.user import *
 from app.config.db import *
 from app.schemas.user import *
 from app.main import *
 from bson.objectid import ObjectId
+import smtplib
+#importing emailMessage
+
 
 router = APIRouter()
+
+EMAIL_ADDRESS = 'ghostabhi323@gmail.com'
+EMAIL_PASSWORD = 'bkre alar pzqp zfnr'
+
+def send_email(subject, body, to):
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg['Subject'] = subject
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = to
+
+    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+        smtp.starttls()
+        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        smtp.send_message(msg)
 
 @router.post("/admin-register", tags=["Admin-Page"])
 async def register(newUser: Admin):
@@ -20,16 +38,22 @@ async def register(newUser: Admin):
         admin_data = newUser.model_dump()  
         res = admin.insert_one(admin_data)
 
+        send_email()
+
         return {"status_code": 201, "message": "User registered successfully", "user_id": str(res.inserted_id)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
     
 
 
-@router.get("/admin-gel-all", tags=["Admin-page"])
-async def get_all_admin():
-    all_admin = admin.find()
-    return mineadmin(all_admin)
+@router.get("/gel-all-admin", tags=["Admin-page"])    
+async def get_all_admin(limit: int = Query(5, ge=1), offset: int = Query(0, ge=0)):
+ all_admin = admin.find().skip(offset).limit(limit)
+ return mineadmin(all_admin)
+
+
+
+
 
 @router.get("/find-one", tags=["Admin-page"])
 async def find_one_admin(id:str):
