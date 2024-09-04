@@ -6,12 +6,13 @@ from app.main import *
 from bson.objectid import ObjectId
 import smtplib
 #importing emailMessage
+from email.message import EmailMessage 
 
 
 router = APIRouter()
 
-EMAIL_ADDRESS = 'ghostabhi323@gmail.com'
-EMAIL_PASSWORD = 'bkre alar pzqp zfnr'
+EMAIL_ADDRESS = 'anjumalfisha@gmail.com'
+EMAIL_PASSWORD = 'vzgz szjn cykj ngka'
 
 def send_email(subject, body, to):
     msg = EmailMessage()
@@ -21,9 +22,10 @@ def send_email(subject, body, to):
     msg['To'] = to
 
     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-        smtp.starttls()
-        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        smtp.send_message(msg)
+        smtp.starttls() 
+        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
+        smtp.send_message(msg) 
+
 
 @router.post("/admin-register", tags=["Admin-Page"])
 async def register(newUser: Admin):
@@ -33,16 +35,43 @@ async def register(newUser: Admin):
             raise HTTPException(status_code=400, detail="Email already registered")
         
         if len(str(newUser.mobile)) != 10:
-            raise HTTPException(status_code=400, detail="Contact number must be of 10 digits")
-             
-        admin_data = newUser.model_dump()  
+            raise HTTPException(status_code=400, detail="Contact number must be 10 digits")
+
+        admin_data = newUser.model_dump()
         res = admin.insert_one(admin_data)
 
-        send_email()
+        subject = "Registration Successful"
+        body = f"Dear {newUser.full_name},\n\nYou have successfully registered as an admin.\n\nRegards,\nTeam"
+        to = newUser.email
+
+        send_email(subject, body, to)
 
         return {"status_code": 201, "message": "User registered successfully", "user_id": str(res.inserted_id)}
+
     except Exception as e:
+       
         raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
+    
+
+
+# @router.post("/admin-register", tags=["Admin-Page"])
+# async def register(newUser: Admin):
+#     try:
+#         existing_user = admin.find_one({"email": newUser.email})
+#         if existing_user:
+#             raise HTTPException(status_code=400, detail="Email already registered")
+        
+#         if len(str(newUser.mobile)) != 10:
+#             raise HTTPException(status_code=400, detail="Contact number must be of 10 digits")
+             
+#         admin_data = newUser.model_dump()  
+#         res = admin.insert_one(admin_data)
+
+#     send_email(subject, body, to)
+
+#     return {"status_code": 201, "message": "User registered successfully", "user_id": str(res.inserted_id)}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
     
 
 
