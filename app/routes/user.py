@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import smtplib
 #importing emailMessage
 from email.message import EmailMessage 
-
+from fastapi import WebSocket
 
 router = APIRouter()
 
@@ -53,27 +53,17 @@ async def register(newUser: Admin):
         raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
     
 
-
-# @router.post("/admin-register", tags=["Admin-Page"])
-# async def register(newUser: Admin):
-#     try:
-#         existing_user = admin.find_one({"email": newUser.email})
-#         if existing_user:
-#             raise HTTPException(status_code=400, detail="Email already registered")
-        
-#         if len(str(newUser.mobile)) != 10:
-#             raise HTTPException(status_code=400, detail="Contact number must be of 10 digits")
-             
-#         admin_data = newUser.model_dump()  
-#         res = admin.insert_one(admin_data)
-
-#     send_email(subject, body, to)
-
-#     return {"status_code": 201, "message": "User registered successfully", "user_id": str(res.inserted_id)}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
-    
-
+websocket_list = []
+@router.websocket("/WS")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    if websocket not in websocket_list:
+        websocket_list.append(websocket)
+    while True:
+        data = await websocket.receive_text()
+        for websocket in websocket_list:
+            if websocket != websocket:
+                await websocket.send_text(f"{data}")
 
 @router.get("/gel-all-admin", tags=["Admin-page"])    
 async def get_all_admin(limit: int = Query(5, ge=1), offset: int = Query(0, ge=0)):
@@ -88,19 +78,6 @@ async def get_all_admin(limit: int = Query(5, ge=1), offset: int = Query(0, ge=0
 async def find_one_admin(id:str):
     all_admin = admin.find_one({"_id": ObjectId(id)})
     return myadmin(all_admin)
-
-
-# @router.get("/admin/{id}", tags=["Admin-page"])
-# def get_id(id: str): 
-#     user = admin.find_one({"_id": ObjectId(id)})
-#     if user is None:
-#         raise HTTPException(status_code=404, detail="Item not found")
-#     all_admin = {**user, "_id": str(user["_id"])}
-
-#     return {
-#         "status": "ok",
-#         "data": all_admin
-#     }
 
 @router.patch("/updateAdmin/{id}", tags=["Admin-page"])
 def updateAdmin(id: str, newUser:Admin):
