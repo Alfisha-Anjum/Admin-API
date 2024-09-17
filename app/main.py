@@ -1,10 +1,22 @@
 from fastapi import FastAPI
 from app.routes import user 
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from cloudinary import uploader as cloudinary_uploader
 import cloudinary
+
 app = FastAPI()
 
+
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, OPTIONS, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 cloudinary.config(
     cloud_name="dsa1ozz2h",
