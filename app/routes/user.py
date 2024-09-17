@@ -5,6 +5,7 @@ from app.schemas.user import *
 from app.main import *
 from bson.objectid import ObjectId
 import smtplib
+import hashlib
 #importing emailMessage
 from email.message import EmailMessage 
 from fastapi import WebSocket
@@ -37,6 +38,10 @@ async def register(newUser: Admin):
         if len(str(newUser.mobile)) != 10:
             raise HTTPException(status_code=400, detail="Contact number must be 10 digits")
 
+
+        hashed_password = hashlib.sha256(newUser.password.encode()).hexdigest()
+        newUser.password = hashed_password 
+
         admin_data = newUser.model_dump()
         res = admin.insert_one(admin_data)
 
@@ -53,6 +58,35 @@ async def register(newUser: Admin):
         raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
     
 
+
+# Login API
+@router.post("/admin-login", tags=["Admin-Page"])
+async def login(login_data: Login):
+    try:
+       
+        existing_user = admin.find_one({"email": login_data.email})
+        if not existing_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+       
+        hashed_password = hashlib.sha256(login_data.password.encode()).hexdigest()
+
+        if existing_user['password'] != hashed_password:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+
+        subject = "Login Successful"
+        body = f"Dear {existing_user['full_name']},\n\nYou have successfully logged in.\n\nRegards,\nTeam"
+        to = login_data.email
+        send_email(subject, body, to)
+
+        return {"status_code": 200, "message": "Login successful"}
+
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
+    
+    
 websocket_list = []
 @router.websocket("/WS")
 async def websocket_endpoint(websocket: WebSocket):
