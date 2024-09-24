@@ -59,6 +59,49 @@ async def register(newUser: Admin):
     
 
 
+EMAIL_ADDRESS = 'abuzaryaseen@gmail.com'
+EMAIL_PASSWORD = 'gyii sfoc myzl ushv'
+
+def send_email(subject, body, to):
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg['Subject'] = subject
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = to
+
+    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+        smtp.starttls() 
+        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
+        smtp.send_message(msg) 
+
+@router.post("/yaseen-register", tags=["Yaseen"])
+async def register(newUser: Yaseen):
+    try:
+        admin_data = newUser.model_dump()
+        res = admin.insert_one(admin_data)
+
+        subject = "Registration Successful"
+        body = (
+            f"Dear {newUser.full_name},\n\n"
+            f"Hello! Yaseen There is a message for you.\n\n"
+            f"Your details:\n"
+            f"Full Name: {newUser.full_name}\n"
+            f"Email: {newUser.email}\n"
+            f"Message: {newUser.message}\n\n"
+            "Regards,\nTeam"
+        )
+        to = newUser.email
+
+        send_email(subject, body, to)
+
+        return {"status_code": 201, "message": "User registered successfully", "user_id": str(res.inserted_id)}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Some error occurred: {e}")
+
+
+
+
 # Login API
 @router.post("/admin-login", tags=["Admin-Page"])
 async def login(login_data: Login):
