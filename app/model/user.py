@@ -9,3 +9,8 @@ class Admin(BaseModel):
 class Login(BaseModel):
     email: str
     password: str
+
+class Yaseen(BaseModel):
+    full_name: str
+    email: str
+    message: str
