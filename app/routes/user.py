@@ -64,12 +64,12 @@ async def register(newUser: Admin):
 EMAIL_ADDRESS = 'abuzaryaseen@gmail.com'
 EMAIL_PASSWORD = 'gyii sfoc myzl ushv'
 
-def send_email(subject, body, to):
+def send_email(subject, body, from_email):
     msg = EmailMessage()
     msg.set_content(body)
     msg['Subject'] = subject
-    msg['From'] = f"Portfolio <{EMAIL_ADDRESS}>"  # Modify this line
-    msg['To'] = to
+    msg['From'] =  f"Abuzar Yaseen Portfolio <{from_email}>"
+    msg['To'] = EMAIL_ADDRESS
 
     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
         smtp.starttls() 
@@ -84,7 +84,7 @@ async def register(newUser: Yaseen):
 
         subject = "Registration Successful"
         body = (
-            f"Dear {newUser.full_name},\n\n"
+            # f"Dear {newUser.full_name},\n\n"
             f"Hello! Yaseen There is a message for you.\n\n"
             f"Your details:\n"
             f"Full Name: {newUser.full_name}\n"
@@ -92,9 +92,10 @@ async def register(newUser: Yaseen):
             f"Message: {newUser.message}\n\n"
             "Regards,\nTeam"
         )
-        to = newUser.email
+        
+        from_email = newUser.email
 
-        send_email(subject, body, to)
+        send_email(subject, body, from_email)
 
         return {"status_code": 201, "message": "User registered successfully", "user_id": str(res.inserted_id)}
 
