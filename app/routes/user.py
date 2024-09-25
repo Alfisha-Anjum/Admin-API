@@ -159,8 +159,8 @@ async def find_one_admin(id:str):
     return myadmin(all_admin)
 
 
-    @router.patch("/updateAdmin/{id}", tags=["Admin-page"])
-    def updateAdmin(id: str, newUser:Admin):
+@router.patch("/updateAdmin/{id}", tags=["Admin-page"])
+def updateAdmin(id: str, newUser:Admin):
     if len(str(newUser.mobile)) != 10:
         raise HTTPException(status_code=400,detail="Contact number must be of 10 digits")
     admin.find_one_and_update(
